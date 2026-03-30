@@ -1,34 +1,54 @@
 from fastapi import FastAPI
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 import joblib
 import numpy as np
+import pandas as pd  # Naya: Excel-jaisi file banane ke liye
+import os            # Naya: File check karne ke liye
 
-# 1. Load the "brain" (the model you just trained)
+# 1. Model aur Labels load karo
 model = joblib.load("model.pkl")
-
-# 2. Create the App
+class_names = {0: "Setosa", 1: "Versicolor", 2: "Virginica"}
 app = FastAPI()
 
-# 3. Define what the input should look like (4 numbers for Iris)
+# 2. Input Guard (Pydantic)
 class IrisInput(BaseModel):
-    sepal_length: float
-    sepal_width: float
-    petal_length: float
-    petal_width: float
+    sepal_length: float = Field(..., gt=0, lt=15)
+    sepal_width: float = Field(..., gt=0, lt=15)
+    petal_length: float = Field(..., gt=0, lt=15)
+    petal_width: float = Field(..., gt=0, lt=15)
 
-# 4. Create the "Predict" endpoint
 @app.post("/predict")
 def predict_flower(data: IrisInput):
-    # Convert input to a format the model understands
-    features = np.array([[
-        data.sepal_length, 
-        data.sepal_width, 
-        data.petal_length, 
-        data.petal_width
-    ]])
+    # Data ko matrix mein badlo
+    features = np.array([[data.sepal_length, data.sepal_width, data.petal_length, data.petal_width]])
     
-    # Get the prediction (0, 1, or 2)
-    prediction = model.predict(features)
+    # Prediction aur Confidence nikaalo
+    prediction_id = int(model.predict(features)[0])
+    probability = np.max(model.predict_proba(features)) * 100
+    flower_name = class_names.get(prediction_id, "Unknown")
+
+    # --- NAYA FEATURE 1: FEATURE IMPORTANCE (Detective) ---
+    # Model se pucho: "Tune kis feature ko kitna importance diya?"
+    importances = model.feature_importances_
+    importance_dict = {
+        "sepal_importance": round(float(importances[0]), 2),
+        "petal_importance": round(float(importances[2]), 2)
+    }
+
+    # --- NAYA FEATURE 2: HISTORY LOGGING (Register) ---
+    # Ek chhota sa record banao
+    log_data = data.model_dump() # User ka input
+    log_data["prediction"] = flower_name
+    log_data["confidence"] = f"{round(probability, 2)}%"
     
-    # Return as JSON
-    return {"prediction": int(prediction[0])}
+    # Isse "prediction_history.csv" mein save karo
+    df = pd.DataFrame([log_data])
+    # 'a' mode ka matlab hai purane data ke niche naya line add karo (Append)
+    df.to_csv("prediction_history.csv", mode='a', header=not os.path.exists("prediction_history.csv"), index=False)
+
+    return {
+        "flower_name": flower_name,
+        "confidence": f"{round(probability, 2)}%",
+        "reasoning": importance_dict,
+        "message": "Data saved to history.csv"
+    }
