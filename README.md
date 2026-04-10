@@ -32,3 +32,15 @@ Ye project sirf ek basic model prediction nahi hai, balki ek complete **End-to-E
    ```bash
    uvicorn main:app --reload
 
+# 📊 API Documentation
+
+1. **Single Prediction**
+   Endpoint: POST /predict
+   Sample Request (JSON):
+   ```JSON
+   {
+  "sepal_length": 5.1,
+  "sepal_width": 3.5,
+  "petal_length": 1.4,
+  "petal_width": 0.2
+  } 
