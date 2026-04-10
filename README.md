@@ -36,7 +36,7 @@ Ye project sirf ek basic model prediction nahi hai, balki ek complete **End-to-E
 
 1. **Single Prediction**
    Endpoint: POST /predict
-   Sample Request (JSON):
+   **Sample Request (JSON):**
    ```JSON
    {
   "sepal_length": 5.1,
@@ -44,3 +44,4 @@ Ye project sirf ek basic model prediction nahi hai, balki ek complete **End-to-E
   "petal_length": 1.4,
   "petal_width": 0.2
   } 
+  ```
