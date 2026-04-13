@@ -58,16 +58,6 @@ This project goes beyond simple inference, demonstrating a production-grade End-
 }
 ```
 
-### 2. Batch Prediction (POST /predict_batch)
-
-**Sample Request:**
-```json
-[
-  { "sepal_length": 5.1, "sepal_width": 3.5, "petal_length": 1.4, "petal_width": 0.2 },
-  { "sepal_length": 7.0, "sepal_width": 3.2, "petal_length": 4.7, "petal_width": 1.4 }
-]
-```
-
 ## 📂 Folder Structure
 
 ```text
@@ -78,3 +68,17 @@ iris-ml-api/
 ├── model.pkl              # Serialized XGBoost classification model
 ├── prediction_history.csv # Persistent log for tracking and predictions
 └── requirements.txt       # Project dependencies and environment specifications
+
+## 🐳 Docker Deployment
+
+To run this application using Docker:
+
+1. **Build the image:**
+   ```bash
+   docker build -t iris-ml-api .
+   ```
+2. **Run the Container:**
+   ```bash
+   docker run -p 8000:8000 iris-ml-api
+   ```
+   
