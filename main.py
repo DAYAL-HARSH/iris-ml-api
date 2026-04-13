@@ -1,30 +1,27 @@
 from fastapi import FastAPI
 from pydantic import BaseModel, Field
-from typing import List  # <--- NAYI LINE (Batch processing ke liye zaroori)
+from typing import List 
 import joblib
 import numpy as np
 import pandas as pd 
 import os
-from fastapi.responses import HTMLResponse # Naya Import
-from fastapi.staticfiles import StaticFiles # Naya Import
+from fastapi.responses import HTMLResponse 
+from fastapi.staticfiles import StaticFiles 
 
-# 1. Model aur Labels load karo
 model = joblib.load("model.pkl")
 class_names = {0: "Setosa", 1: "Versicolor", 2: "Virginica"}
 app = FastAPI()
-from fastapi.staticfiles import StaticFiles # Ye import sabse upar check kar lena
 
-# App define karne ke baad ye line add karo
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# 2. Input Guard (Pydantic)
+
 class IrisInput(BaseModel):
     sepal_length: float = Field(..., gt=0, lt=15)
     sepal_width: float = Field(..., gt=0, lt=15)
     petal_length: float = Field(..., gt=0, lt=15)
     petal_width: float = Field(..., gt=0, lt=15)
 
-# --- SINGLE PREDICTION (Purana Code) ---
+
 @app.post("/predict")
 def predict_flower(data: IrisInput):
     features = np.array([[data.sepal_length, data.sepal_width, data.petal_length, data.petal_width]])
@@ -53,21 +50,19 @@ def predict_flower(data: IrisInput):
         "message": "Data saved to history.csv"
     }
 
-# --- BATCH PREDICTION (NAYA FUNCTION) --- # <--- NAYI SECTION
+
 @app.post("/predict_batch")
-def predict_batch(flowers: List[IrisInput]): # <--- NAYI LINE
-    results = [] # Saare answers store karne ke liye khali list
+def predict_batch(flowers: List[IrisInput]): 
+    results = [] 
     
-    for flower in flowers: # Ek-ek karke saare flowers par loop chalega
-        # Features nikaalo
+    for flower in flowers: 
         features = np.array([[flower.sepal_length, flower.sepal_width, flower.petal_length, flower.petal_width]])
         
-        # Prediction logic (Same as above)
         prediction_id = int(model.predict(features)[0])
         probability = np.max(model.predict_proba(features)) * 100
         flower_name = class_names.get(prediction_id, "Unknown")
         
-        # List mein result add karo
+        
         results.append({
             "flower_name": flower_name,
             "confidence": f"{round(probability, 2)}%"

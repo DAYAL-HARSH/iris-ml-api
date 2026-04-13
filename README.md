@@ -1,12 +1,11 @@
+# 🚀 Live Demo: https://iris-predictor-harsh.onrender.com/
+
 # 🌸 Iris Neural Engine: Production-Grade ML API
 
-Ek high-performance Machine Learning Web Application jo **XGBoost** ka use karke Iris flower ki species predict karti hai. Isme ek premium **Glassmorphism UI** aur **FastAPI** backend ka integration hai.
+Iris Species Predictor: A high-performance Machine Learning web application leveraging XGBoost for precision classification. Features a sleek, premium Glassmorphism UI and a lightning-fast FastAPI backend integration.
 
 ## 🚀 Project Overview
-Ye project sirf ek basic model prediction nahi hai, balki ek complete **End-to-End ML Pipeline** ka demonstration hai. Isme advanced features include kiye gaye hain:
-* **Input Validation:** Pydantic models ka use karke.
-* **Explainability:** Feature importance reasoning.
-* **Logging:** Automated prediction history ledger.
+This project goes beyond simple inference, demonstrating a production-grade End-to-End ML Pipeline. It integrates Pydantic for rigorous data validation, automated logging for prediction traceability, and integrated model explainability to provide insights into feature importance.
 
 ## 🛠️ Tech Stack
 * **Backend:** FastAPI (Python)
@@ -17,9 +16,9 @@ Ye project sirf ek basic model prediction nahi hai, balki ek complete **End-to-E
 
 ## ⚙️ How to Run
 
-1. **Repository Clone karein:**
+1. **How to Clone Respository:**
    ```bash
-   git clone [https://github.com/your-username/iris-ml-api.git](https://github.com/your-username/iris-ml-api.git)
+   git clone https://github.com/DAYAL-HARSH/iris-ml-api.git
    cd iris-ml-api
    ```
 
@@ -30,7 +29,7 @@ Ye project sirf ek basic model prediction nahi hai, balki ek complete **End-to-E
    pip install -r requirements.txt
    ```
 
-3. **Server Start karein**
+3. **How to start Server**
    ```bash
    uvicorn main:app --reload
    ```
@@ -73,9 +72,9 @@ Ye project sirf ek basic model prediction nahi hai, balki ek complete **End-to-E
 
 ```text
 iris-ml-api/
-├── main.py                # FastAPI Backend aur Integrated UI Logic
-├── model.pkl              # Trained XGBoost Model file
-├── prediction_history.csv # CSV file jahan saara prediction data log hota hai
-├── requirements.txt       # Project ki saari Python dependencies
-└── static/                # Static files ka folder
-    └── images/            # Local flower images jo UI mein dikhti hain
+├── static/
+│   └── images/            # Assets for species visualization and UI enhancement
+├── main.py                # Core FastAPI application containing API logic and UI routes
+├── model.pkl              # Serialized XGBoost classification model
+├── prediction_history.csv # Persistent log for tracking and predictions
+└── requirements.txt       # Project dependencies and environment specifications
