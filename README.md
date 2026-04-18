@@ -1,45 +1,50 @@
-# 🚀 Live Demo: https://iris-predictor-harsh.onrender.com/
+# 🚀 ML Inference API with FastAPI (Iris Classification)
 
-# 🌸 Iris Neural Engine: Production-Grade ML API
+## 📌 Overview
 
-Iris Species Predictor: A high-performance Machine Learning web application leveraging XGBoost for precision classification. Features a sleek, premium Glassmorphism UI and a lightning-fast FastAPI backend integration.
+This project is a **containerized machine learning inference service** built using FastAPI and Docker. It exposes REST APIs for real-time and batch predictions using a trained XGBoost model.
 
-## 🚀 Project Overview
-This project goes beyond simple inference, demonstrating a production-grade End-to-End ML Pipeline. It integrates Pydantic for rigorous data validation, automated logging for prediction traceability, and integrated model explainability to provide insights into feature importance.
+The goal of this project is to simulate a **production-ready ML backend system**, focusing on API design, deployment, and scalability rather than just model training.
 
-## 🛠️ Tech Stack
+---
+
+## ⚙️ Tech Stack
+
 * **Backend:** FastAPI (Python)
 * **Machine Learning:** XGBoost, Scikit-learn
-* **Frontend:** HTML5, CSS3 (Glassmorphism), JavaScript (Fetch API)
-* **Data Handling:** Pandas, NumPy
-* **Model Management:** Joblib
+* **Containerization:** Docker
+* **Deployment:** Render
+* **Language:** Python
 
-## ⚙️ How to Run
+---
 
-1. **How to Clone Respository:**
-   ```bash
-   git clone https://github.com/DAYAL-HARSH/iris-ml-api.git
-   cd iris-ml-api
-   ```
+## 🧠 Problem Statement
 
-2. **Virtual Environment & Libraries**
-   ```bash
-   python -m venv venv
-   source venv/bin/activate  # Windows: venv\Scripts\activate
-   pip install -r requirements.txt
-   ```
+The system predicts the species of an iris flower based on input features:
 
-3. **How to start Server**
-   ```bash
-   uvicorn main:app --reload
-   ```
+* Sepal length
+* Sepal width
+* Petal length
+* Petal width
 
+While the dataset is simple, this project emphasizes **building a robust ML service**, not just model accuracy.
 
-## 📊 API Documentation
+---
 
-### 1. Single Prediction (`POST /predict`)
+## 🏗️ System Architecture
 
-**Sample Request:**
+Client → FastAPI → ML Model → Response
+
+---
+
+## 🔌 API Endpoints
+
+### 1. Predict (Single Input)
+
+`POST /predict`
+
+**Input:**
+
 ```json
 {
   "sepal_length": 5.1,
@@ -49,37 +54,74 @@ This project goes beyond simple inference, demonstrating a production-grade End-
 }
 ```
 
-**Sample Response:**
+**Output:**
+
 ```json
 {
-  "flower_name": "Setosa",
-  "confidence": "99.85%",
-  "message": "Data saved to history.csv"
+  "prediction": "setosa"
 }
 ```
 
-## 📂 Folder Structure
+---
 
-```text
-iris-ml-api/
-├── static/
-│   └── images/            # Assets for species visualization and UI enhancement
-├── main.py                # Core FastAPI application containing API logic and UI routes
-├── model.pkl              # Serialized XGBoost classification model
-├── prediction_history.csv # Persistent log for tracking and predictions
-└── requirements.txt       # Project dependencies and environment specifications
+### 2. Batch Prediction
+
+`POST /batch_predict`
+
+* Accepts multiple inputs
+* Returns predictions for all records
+
+---
+
+### 3. Health Check
+
+`GET /health`
+
+* Checks if the API is running
+
+---
+
+## 🧪 Model Details
+
+* Algorithm: XGBoost Classifier
+* Dataset: Iris Dataset
+* Evaluation Metrics: Accuracy, Precision, Recall
+
+---
+
+## 🐳 Docker Support
+
+The application is fully containerized:
+
+```bash
+docker build -t iris-api .
+docker run -p 8000:8000 iris-api
 ```
 
+---
 
-## 🐳 Docker Deployment
-To run this application using Docker:
+## 🌐 Deployment
 
-1. **Build the image:**
-   ```bash
-   docker build -t iris-ml-api .
-   ```
-2. **Run the Container:**
-   ```bash
-   docker run -p 8000:8000 iris-ml-api
-   ```
-   
+The API is deployed and accessible online:
+
+👉 [Live API Link] (add your Render link here)
+
+---
+
+## 📈 Future Improvements
+
+* Model versioning (`/v1`, `/v2` endpoints)
+* Logging and monitoring
+* Input validation enhancements
+* CI/CD pipeline integration
+
+---
+
+## 💡 Key Learnings
+
+* Designing REST APIs for ML inference
+* Containerizing applications using Docker
+* Deploying backend services to cloud platforms
+* Structuring scalable ML systems
+
+---
