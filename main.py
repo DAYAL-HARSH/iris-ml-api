@@ -127,9 +127,11 @@ HTML_CONTENT = """
         <div id="result-section"></div>
     </div>
 
-    <script>
+<script>
     let isBatch = false;
+
     function toggleMode() {
+        console.log("Switching modes...");
         isBatch = !isBatch;
         document.getElementById('single-inputs').style.display = isBatch ? 'none' : 'block';
         document.getElementById('batch-inputs').style.display = isBatch ? 'block' : 'none';
@@ -137,113 +139,82 @@ HTML_CONTENT = """
     }
 
     async function predict() {
-        const keyField = document.getElementById('api-key');
-        const key = keyField.value;
+        console.log("Button Clicked! Starting prediction...");
+        
+        const key = document.getElementById('api-key').value;
         const resDiv = document.getElementById('result-section');
         const endpoint = isBatch ? '/predict/batch' : '/predict';
-        let body;
-
-        // 1. Check if key is empty before even calling the API
+        
         if (!key) {
-            alert("Security Error: Please enter an Auth Key in the top right corner.");
-            keyField.style.borderColor = "red";
+            alert("Security Error: Please enter the Auth Key (top right).");
             return;
         }
 
-        if(isBatch) {
-            try { body = JSON.parse(document.getElementById('batch-json').value); }
-            catch(e) { alert("Format Error: Invalid JSON."); return; }
-        } else {
-            body = { 
-                sepal_length: parseFloat(document.getElementById('sl').value), 
-                sepal_width: parseFloat(document.getElementById('sw').value),
-                petal_length: parseFloat(document.getElementById('pl').value),
-                petal_width: parseFloat(document.getElementById('pw').value)
-            };
+        let body;
+        try {
+            if(isBatch) {
+                body = JSON.parse(document.getElementById('batch-json').value);
+            } else {
+                body = { 
+                    sepal_length: parseFloat(document.getElementById('sl').value), 
+                    sepal_width: parseFloat(document.getElementById('sw').value),
+                    petal_length: parseFloat(document.getElementById('pl').value),
+                    petal_width: parseFloat(document.getElementById('pw').value)
+                };
+            }
+        } catch(e) {
+            alert("Input Error: Check your numbers or JSON format.");
+            return;
         }
+
+        console.log("Sending request to:", endpoint);
 
         try {
             const res = await fetch(endpoint, {
                 method: 'POST',
-                headers: {'Content-Type': 'application/json', 'X-API-KEY': key},
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-API-KEY': key
+                },
                 body: JSON.stringify(body)
             });
 
-            // 2. Handle the 403 Unauthorized specifically
             if (res.status === 403) {
                 resDiv.style.display = 'block';
-                resDiv.innerHTML = `
-                    <div style="text-align:center; color:#ff4444; padding:20px; border:1px solid #ff4444; border-radius:12px; background:rgba(255,68,68,0.1);">
-                        <strong>ACCESS DENIED</strong><br>
-                        <small>Invalid or missing API Key. Verification failed.</small>
-                    </div>`;
-                keyField.style.borderColor = "red";
+                resDiv.innerHTML = '<div style="color:#ff4444; border:1px solid #ff4444; padding:15px; border-radius:12px; background:rgba(255,68,68,0.1); text-align:center;"><strong>ACCESS DENIED</strong><br>Invalid Auth Key</div>';
                 return;
             }
 
-            // 3. Handle success
             const data = await res.json();
-            keyField.style.borderColor = "var(--primary)";
+            console.log("Data received:", data);
+            
             resDiv.style.display = 'block';
             resDiv.innerHTML = '';
 
             if(!isBatch) {
                 resDiv.innerHTML = `
                     <div style="text-align:center;">
-                        <span style="background:rgba(0,255,136,0.1); color:var(--primary); padding:5px 15px; border-radius:20px; font-weight:bold;">${data.flower_name.toUpperCase()}</span>
-                        <p style="margin:10px 0; font-size:0.9rem; color:#94a3b8;">Confidence: <strong>${data.confidence}</strong></p>
-                        <img src="${data.image_url}" class="res-img" style="max-height:180px; width:auto;">
+                        <h2 style="color:var(--primary); margin-bottom:5px;">${data.flower_name.toUpperCase()}</h2>
+                        <p style="color:#94a3b8; margin-top:0;">Confidence: ${data.confidence}</p>
+                        <img src="${data.image_url}" style="width:100%; max-width:280px; border-radius:15px; border: 2px solid var(--primary); box-shadow: 0 0 15px rgba(0,255,136,0.3);">
                     </div>`;
             } else {
-                let html = '<div class="batch-grid">';
+                let html = '<div class="batch-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">';
                 data.predictions.forEach(p => {
-                    html += `<div class="batch-card"><small>${p.flower_name.toUpperCase()}</small><br><img src="${p.image_url}" class="res-img"></div>`;
+                    html += `
+                        <div class="batch-card" style="background:rgba(255,255,255,0.05); padding:10px; border-radius:10px; text-align:center; border:1px solid rgba(0,255,136,0.2);">
+                            <span style="color:var(--primary); font-size:0.8rem; font-weight:bold;">${p.flower_name.toUpperCase()}</span>
+                            <img src="${p.image_url}" style="width:100%; height:80px; object-fit:cover; border-radius:5px; margin-top:5px;">
+                        </div>`;
                 });
                 resDiv.innerHTML = html + '</div>';
             }
-        } catch (error) {
-            // 4. Handle total network failure (Render sleeping, etc.)
-            alert("Connection Error: Is the server running?");
+        } catch (err) {
+            console.error("Network Error:", err);
+            alert("The server is not responding. Check Render logs.");
         }
     }
-
-        const res = await fetch(endpoint, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json', 'X-API-KEY': key},
-            body: JSON.stringify(body)
-        });
-
-        if (res.status === 403) { alert("Access Denied: Invalid Key"); return; }
-        
-        const data = await res.json();
-        const resDiv = document.getElementById('result-section');
-        resDiv.style.display = 'block';
-        resDiv.innerHTML = '';
-
-        if(!isBatch) {
-            // Updated single result template for a LARGE image
-            resDiv.innerHTML = `
-                <div style="text-align:center; padding: 10px;">
-                    <div style="background:rgba(0,255,136,0.1); color:var(--primary); padding:8px 20px; border-radius:20px; font-weight:bold; display:inline-block; margin-bottom:10px;">
-                        ${data.flower_name.toUpperCase()}
-                    </div>
-                    <p style="font-size:1.1rem; color:#94a3b8; margin:5px 0;">Confidence: <strong>${data.confidence}</strong></p>
-                    <img src="${data.image_url}" style="width:100%; max-width:350px; border-radius:18px; margin-top:15px; border: 2px solid var(--primary); box-shadow: 0 0 20px rgba(0,255,136,0.2);">
-                </div>`;
-        } else {
-            let html = '<div class="batch-grid">';
-            data.predictions.forEach(p => {
-                html += `
-                    <div class="batch-card">
-                        <div style="color:var(--primary); font-weight:bold; font-size:0.75rem;">${p.flower_name.toUpperCase()}</div>
-                        <div style="font-size:0.65rem; color:#94a3b8;">${p.confidence}</div>
-                        <img src="${p.image_url}" class="res-img">
-                    </div>`;
-            });
-            resDiv.innerHTML = html + '</div>';
-        }
-    }
-    </script>
+</script>
 </body>
 </html>
 """
