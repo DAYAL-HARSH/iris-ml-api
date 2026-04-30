@@ -104,7 +104,7 @@ docker run -p 8000:8000 iris-api
 
 The API is deployed and accessible online:
 
-👉 [Live API Link] (add your Render link here)
+👉 https://iris-predictor-harsh.onrender.com
 
 ---
 
