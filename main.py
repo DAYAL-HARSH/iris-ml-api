@@ -137,28 +137,75 @@ HTML_CONTENT = """
     }
 
     async function predict() {
-        const key = document.getElementById('api-key').value;
+        const keyField = document.getElementById('api-key');
+        const key = keyField.value;
+        const resDiv = document.getElementById('result-section');
         const endpoint = isBatch ? '/predict/batch' : '/predict';
         let body;
 
+        // 1. Check if key is empty before even calling the API
+        if (!key) {
+            alert("Security Error: Please enter an Auth Key in the top right corner.");
+            keyField.style.borderColor = "red";
+            return;
+        }
+
         if(isBatch) {
             try { body = JSON.parse(document.getElementById('batch-json').value); }
-            catch(e) { alert("Invalid JSON format!"); return; }
+            catch(e) { alert("Format Error: Invalid JSON."); return; }
         } else {
-            const vals = [
-                document.getElementById('sl').value, 
-                document.getElementById('sw').value, 
-                document.getElementById('pl').value, 
-                document.getElementById('pw').value
-            ];
-            if(vals.some(v => v === "")) { alert("Please fill all fields"); return; }
             body = { 
-                sepal_length: parseFloat(vals[0]), 
-                sepal_width: parseFloat(vals[1]), 
-                petal_length: parseFloat(vals[2]), 
-                petal_width: parseFloat(vals[3]) 
+                sepal_length: parseFloat(document.getElementById('sl').value), 
+                sepal_width: parseFloat(document.getElementById('sw').value),
+                petal_length: parseFloat(document.getElementById('pl').value),
+                petal_width: parseFloat(document.getElementById('pw').value)
             };
         }
+
+        try {
+            const res = await fetch(endpoint, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json', 'X-API-KEY': key},
+                body: JSON.stringify(body)
+            });
+
+            // 2. Handle the 403 Unauthorized specifically
+            if (res.status === 403) {
+                resDiv.style.display = 'block';
+                resDiv.innerHTML = `
+                    <div style="text-align:center; color:#ff4444; padding:20px; border:1px solid #ff4444; border-radius:12px; background:rgba(255,68,68,0.1);">
+                        <strong>ACCESS DENIED</strong><br>
+                        <small>Invalid or missing API Key. Verification failed.</small>
+                    </div>`;
+                keyField.style.borderColor = "red";
+                return;
+            }
+
+            // 3. Handle success
+            const data = await res.json();
+            keyField.style.borderColor = "var(--primary)";
+            resDiv.style.display = 'block';
+            resDiv.innerHTML = '';
+
+            if(!isBatch) {
+                resDiv.innerHTML = `
+                    <div style="text-align:center;">
+                        <span style="background:rgba(0,255,136,0.1); color:var(--primary); padding:5px 15px; border-radius:20px; font-weight:bold;">${data.flower_name.toUpperCase()}</span>
+                        <p style="margin:10px 0; font-size:0.9rem; color:#94a3b8;">Confidence: <strong>${data.confidence}</strong></p>
+                        <img src="${data.image_url}" class="res-img" style="max-height:180px; width:auto;">
+                    </div>`;
+            } else {
+                let html = '<div class="batch-grid">';
+                data.predictions.forEach(p => {
+                    html += `<div class="batch-card"><small>${p.flower_name.toUpperCase()}</small><br><img src="${p.image_url}" class="res-img"></div>`;
+                });
+                resDiv.innerHTML = html + '</div>';
+            }
+        } catch (error) {
+            // 4. Handle total network failure (Render sleeping, etc.)
+            alert("Connection Error: Is the server running?");
+        }
+    }
 
         const res = await fetch(endpoint, {
             method: 'POST',
